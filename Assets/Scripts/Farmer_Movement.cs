@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class Farmer_Movement : MonoBehaviour {
@@ -32,13 +32,9 @@ public class Farmer_Movement : MonoBehaviour {
 			movePosition = Camera.main.ScreenToWorldPoint(movePosition);
 			movePosition.z = transform.position.z;
 			animator.SetBool("walking",true);
+			StopCoroutine("moveToLocation");
+			StartCoroutine("moveToLocation", movePosition);
 		}
-
-		if (transform.position == movePosition && !attacking)
-			animator.SetBool("walking",false);
-
-		previousPosition = transform.position;
-		transform.position = Vector3.MoveTowards (transform.position, movePosition, Time.deltaTime * speed);
 	}
 
 	void OnTriggerEnter2D(Collider2D other) {
@@ -47,6 +43,21 @@ public class Farmer_Movement : MonoBehaviour {
 			animator.SetBool("walking",true);
 			StartCoroutine(destroyWolf(other));
 		}
+	}
+
+	void OnTriggeStay2D(Collider2D other) {
+		if (other.tag.Equals("wolf")) {
+			animator.SetBool("walking",true);
+		}
+	}
+	
+	IEnumerator moveToLocation(Vector3 targetLocation) {
+		while (transform.position != targetLocation) {
+			previousPosition = transform.position;
+			transform.position = Vector3.MoveTowards (transform.position, movePosition, Time.deltaTime * speed);
+			yield return null;
+		}
+		animator.SetBool ("walking", false);
 	}
 
 	IEnumerator destroyWolf(Collider2D other) {
@@ -62,6 +73,8 @@ public class Farmer_Movement : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D other) {
 		//if game tag is fence
+		StopCoroutine ("moveToLocation");
+		animator.SetBool ("walking", false);
 		beforeCollision = previousPosition;
 		movePosition = beforeCollision;
 		transform.position = previousPosition;
@@ -69,6 +82,8 @@ public class Farmer_Movement : MonoBehaviour {
 	}
 
 	void OnCollisionStay2D(Collision2D other) {
+		StopCoroutine ("moveToLocation");
+		animator.SetBool ("walking", false);
 		movePosition = beforeCollision;
 		transform.position = beforeCollision;
 		gameObject.transform.rotation = Quaternion.identity;
