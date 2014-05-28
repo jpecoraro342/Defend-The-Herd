@@ -15,8 +15,11 @@ public class Goat_AI : MonoBehaviour {
 
 	private int killCounter; 
 
+	private GameController mainLoop;
+
 	// Use this for initialization
 	void Start () {
+		mainLoop = (GameController) GameObject.FindGameObjectWithTag ("scripts").GetComponent(typeof(GameController));
 		animator = this.GetComponent<Animator> ();
 		animator.SetInteger ("Behavior", 0);	// bounce
 	}
@@ -73,16 +76,9 @@ public class Goat_AI : MonoBehaviour {
 
 	IEnumerator killGoat() {
 		StopCoroutine ("dealDamageFromWolf");
-		Debug.Log ("goat Died");
-		killCounter++;
+		mainLoop.incrementKillCounter();
 		dead = true; 
 		yield return new WaitForSeconds (3f);
 		Destroy (gameObject);
 	}
-
-	IEnumerator GG() {
-		yield return new WaitForSeconds(2f);
-		Application.LoadLevel ("GG");
-	}
-
 }

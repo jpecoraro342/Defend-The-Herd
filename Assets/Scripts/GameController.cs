@@ -24,10 +24,13 @@ public class GameController : MonoBehaviour {
 	public GUIContent HALOSword; 
 	public GUIContent sword;  
 
+	private int killCounter;
+
 	GameObject[] fences;
 	Fence_AI[] fenceAI;
 	
 	void Start() {
+		killCounter = 0;
 		fences = GameObject.FindGameObjectsWithTag ("fence");
 		fenceAI = new Fence_AI[fences.Length];
 		for (int i = 0; i < fences.Length; i ++) {
@@ -129,6 +132,17 @@ public class GameController : MonoBehaviour {
 		for (int i = 0; i < fenceAI.Length; i++) {
 			fenceAI[i].upgradeFence(upgradeLevel);
 		}
+	}
+
+	public void incrementKillCounter() {
+		killCounter ++;
+		if (killCounter >= 3) 
+			StartCoroutine ("GG");
+	}
+
+	IEnumerator GG() {
+		yield return new WaitForSeconds (2f);
+		Application.LoadLevel("GG");
 	}
 	
 	IEnumerator SpawnWolves() {
