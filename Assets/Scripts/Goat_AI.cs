@@ -24,14 +24,13 @@ public class Goat_AI : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		time += Time.deltaTime;
+
+		if (killCounter >= 3) {
+			Application.LoadLevel("GG");
+			//StartCoroutine("GG");
+		}
 		
 		if (dead) {
-			killCounter++; 
-			Debug.Log ("Kill counter increased"); 
-			if (killCounter == 3) {
-				StopAllCoroutines (); 
-				Application.LoadLevel ("GG"); 
-			}
 			animator.SetInteger ("Behavior", 1);	// die
 			(gameObject.GetComponent ("Halo") as Behaviour).enabled = true;
 			transform.position = Vector3.MoveTowards (transform.position, new Vector3 (transform.position.x, 15, transform.position.z), Time.deltaTime * 2);
@@ -48,34 +47,42 @@ public class Goat_AI : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D(Collider2D other) {
-		if(other.gameObject.tag == "wolf") {
-			damage+=Time.deltaTime; 
+		if (other.tag.Equals("wolf")) {
+			damage += Time.deltaTime;
+			StartCoroutine("dealDamageFromWolf");
 		}
-		Debug.Log (damage);
-		if(damage >= maxhealth) {	
-			StartCoroutine(killGoat ()); 
-			
+	}
+	
+	void OnTriggerExit2D(Collider2D other) {
+		if (other == null || other.tag.Equals("wolf")) {
+			StopCoroutine("dealDamageFromWolf");
+		}
+	}
+	
+	IEnumerator dealDamageFromWolf() {
+		while (true) {
+			damage += Time.deltaTime;
+			if (damage >= maxhealth) {
+				if (!dead) 
+					StartCoroutine(killGoat ());
+				yield break;
+			}
+			yield return null;
 		}
 	}
 
 	IEnumerator killGoat() {
-		Debug.Log ("corouting");
+		StopCoroutine ("dealDamageFromWolf");
+		Debug.Log ("goat Died");
+		killCounter++;
 		dead = true; 
 		yield return new WaitForSeconds (3f);
-		Debug.Log ("waited");
-
+		Destroy (gameObject);
 	}
 
-
-	void OnTriggerStay2D(Collider2D other) {
-		//if game tag is wolf
-		if(other.gameObject.tag == "wolf") {
-			damage+=Time.deltaTime; 
-		}
-		Debug.Log (damage);
-		if(damage >= maxhealth) {
-			StartCoroutine(killGoat ()); 
-		}
+	IEnumerator GG() {
+		yield return new WaitForSeconds(2f);
+		Application.LoadLevel ("GG");
 	}
 
-	}
+}

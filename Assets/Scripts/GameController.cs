@@ -42,6 +42,7 @@ public class GameController : MonoBehaviour {
 		waveText.text = "Wave: " + waveNumber;
 		coinText.text = "Coins: " + farmerMovement.getMoney (); 
 		StartCoroutine (SpawnWolves());
+		StartCoroutine (CheckEndOfWave ());
 	}
 	
 	void theShopMenu() {
@@ -100,15 +101,7 @@ public class GameController : MonoBehaviour {
 	}
 	
 	void Update () {
-		if (farmerMovement.getWolvesDestroyed () == wolvesToSpawn) {
-			isDuringWave = false;
-		}
 		coinText.text = "Coins: " + farmerMovement.getMoney (); 
-		GameObject[] goats;
-		goats = GameObject.FindGameObjectsWithTag ("goat");
-		if (goats.Length == 0) {
-			Application.LoadLevel("GG");
-		}
 	}
 
 	void incrementWave() {
@@ -123,6 +116,7 @@ public class GameController : MonoBehaviour {
 		farmerMovement.resetWolvesDestroyed ();
 		updateFences ();
 		StartCoroutine(SpawnWolves());
+		StartCoroutine (CheckEndOfWave());
 	}
 
 	void updateFences() {
@@ -144,6 +138,16 @@ public class GameController : MonoBehaviour {
 			Instantiate(wolf, spawnLocation, Quaternion.identity);
 			yield return new WaitForSeconds(Random.Range(.2f,maxWait));
 		}
-		yield return new WaitForSeconds (2);
+	}
+
+	IEnumerator CheckEndOfWave() {
+		while (isDuringWave) {
+			if (farmerMovement.getWolvesDestroyed () == wolvesToSpawn) {
+				yield return new WaitForSeconds(2f);
+				isDuringWave = false;
+				yield break;
+			}
+			yield return null;
+		}
 	}
 }

@@ -92,8 +92,8 @@ public class Farmer_Movement : MonoBehaviour {
 	void OnCollisionExit2D(Collision2D other) {
 		gameObject.transform.rotation = Quaternion.identity;
 		//if game tag is fence
-		//movePosition = previousPosition;
-		//transform.position = previousPosition;
+		movePosition = previousPosition;
+		transform.position = previousPosition;
 	}
 
 	public void setCanMove(bool canMove) {
