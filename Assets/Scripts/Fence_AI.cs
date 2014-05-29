@@ -29,18 +29,18 @@ public class Fence_AI : MonoBehaviour {
 			else if (damage >= maxHealth/3f) {
 				animator.SetBool("damaged", true);
 			}
-			StartCoroutine("dealDamageFromWolf");
+			StartCoroutine("dealDamageFromWolf", other);
 		}
 	}
 
 	void OnTriggerExit2D(Collider2D other) {
-		if (other == null || other.tag.Equals("wolf")) {
+		if (other.tag.Equals("wolf")) {
 			StopCoroutine("dealDamageFromWolf");
 		}
 	}
 
-	IEnumerator dealDamageFromWolf() {
-		while (true) {
+	IEnumerator dealDamageFromWolf(Collider2D wolf) {
+		while (wolf != null) {
 			damage += Time.deltaTime;
 			if (damage >= maxHealth) {
 				gameObject.SetActive(false);

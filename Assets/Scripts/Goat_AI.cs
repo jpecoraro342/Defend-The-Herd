@@ -52,7 +52,7 @@ public class Goat_AI : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag.Equals("wolf")) {
 			damage += Time.deltaTime;
-			StartCoroutine("dealDamageFromWolf");
+			StartCoroutine("dealDamageFromWolf", other);
 		}
 	}
 	
@@ -62,8 +62,8 @@ public class Goat_AI : MonoBehaviour {
 		}
 	}
 	
-	IEnumerator dealDamageFromWolf() {
-		while (true) {
+	IEnumerator dealDamageFromWolf(Collider2D other) {
+		while (other != null) {
 			damage += Time.deltaTime;
 			if (damage >= maxhealth) {
 				if (!dead) 
