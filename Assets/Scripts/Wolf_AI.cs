@@ -51,9 +51,7 @@ public class Wolf_AI : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) {
 		string tag = other.tag;
 		if (tag.Equals("fence")) {
-			goatAttackMode = false;
-			beginningMovement = false;
-			animator.SetBool("attacking", true);
+			StartCoroutine(attackingFence(other.gameObject));
 		}
 		else if (tag.Equals("goat")) {
 			goatAttackMode = false;
@@ -62,11 +60,13 @@ public class Wolf_AI : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerStay2D(Collider2D other) {
-
-	}
-
-	void OnTriggerExit2D(Collider2D other) {
+	IEnumerator attackingFence(GameObject fence) {
+		goatAttackMode = false;
+		beginningMovement = false;
+		animator.SetBool("attacking", true);
+		while (fence.activeSelf) {
+			yield return null;
+		}
 		animator.SetBool ("attacking", false);
 		if (transform.position.x < 1.5) {
 			goatAttackMode = true;
