@@ -16,39 +16,14 @@ public class Fence_AI : MonoBehaviour {
 		animator.SetInteger ("fenceType", 0);
 		animator.SetBool ("damaged", false);
 	}
-
-	void Update () {
-	}
-
-	void OnTriggerEnter2D(Collider2D other) {
-		if (other.tag.Equals("wolf")) {
-			damage += Time.deltaTime;
-			if (damage >= maxHealth) {
-				gameObject.SetActive(false);
-			}
-			else if (damage >= maxHealth/3f) {
-				animator.SetBool("damaged", true);
-			}
-			StartCoroutine("dealDamageFromWolf", other);
+	
+	public void dealDamage(float damageToDeal) {
+		damage += damageToDeal;
+		if (damage >= maxHealth) {
+			gameObject.SetActive(false);
 		}
-	}
-
-	void OnTriggerExit2D(Collider2D other) {
-		if (other.tag.Equals("wolf")) {
-			StopCoroutine("dealDamageFromWolf");
-		}
-	}
-
-	IEnumerator dealDamageFromWolf(Collider2D wolf) {
-		while (wolf != null) {
-			damage += Time.deltaTime;
-			if (damage >= maxHealth) {
-				gameObject.SetActive(false);
-			}
-			else if (damage >= maxHealth/3) {
-				animator.SetBool("damaged", true);
-			}
-			yield return null;
+		else if (damage >= maxHealth/3) {
+			animator.SetBool("damaged", true);
 		}
 	}
 

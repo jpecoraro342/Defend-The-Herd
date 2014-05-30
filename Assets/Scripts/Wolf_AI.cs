@@ -6,11 +6,13 @@ public class Wolf_AI : MonoBehaviour {
 	private bool beginningMovement;
 	private bool goatAttackMode;
 
+	private int numFencesAttacking;
 	private int goatAttackingIndex;
 
 	private Animator animator;
 
 	private GameObject goat;
+	private GameObject secondAttackingFence;	
 
 	GameObject[] goats;
 
@@ -51,7 +53,12 @@ public class Wolf_AI : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) {
 		string tag = other.tag;
 		if (tag.Equals("fence")) {
-			StartCoroutine(attackingFence(other.gameObject));
+			numFencesAttacking++;
+			if (numFencesAttacking == 1)
+				StartCoroutine(attackingFence(other.gameObject));
+			else {
+				secondAttackingFence = other.gameObject;
+			}
 		}
 		else if (tag.Equals("goat")) {
 			goatAttackMode = false;
@@ -61,19 +68,27 @@ public class Wolf_AI : MonoBehaviour {
 	}
 
 	IEnumerator attackingFence(GameObject fence) {
+		Fence_AI fenceDamager = (Fence_AI)fence.GetComponent (typeof(Fence_AI));
 		goatAttackMode = false;
 		beginningMovement = false;
 		animator.SetBool("attacking", true);
 		while (fence.activeSelf) {
+			fenceDamager.dealDamage(Time.deltaTime);
 			yield return null;
 		}
-		animator.SetBool ("attacking", false);
-		if (transform.position.x < 1.5) {
-			goatAttackMode = true;
-			findGoat();
+		numFencesAttacking--;
+		if (numFencesAttacking == 1) {
+			StartCoroutine(attackingFence(secondAttackingFence));
 		}
 		else {
-			beginningMovement = true;
+			animator.SetBool ("attacking", false);
+			if (transform.position.x < 1.5) {
+				goatAttackMode = true;
+				findGoat();
+			}
+			else {
+				beginningMovement = true;
+			}
 		}
 	}
 
