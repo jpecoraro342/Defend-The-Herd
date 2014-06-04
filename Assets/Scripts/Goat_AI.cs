@@ -19,6 +19,7 @@ public class Goat_AI : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		killCounter = 0;
 		mainLoop = (GameController) GameObject.FindGameObjectWithTag ("scripts").GetComponent(typeof(GameController));
 		animator = this.GetComponent<Animator> ();
 		animator.SetInteger ("Behavior", 0);	// bounce

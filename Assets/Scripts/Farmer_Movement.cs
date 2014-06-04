@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Farmer_Movement : MonoBehaviour {
 
@@ -10,13 +11,15 @@ public class Farmer_Movement : MonoBehaviour {
 	private Vector3 previousPosition;
 	private Vector3 beforeCollision;
 	private bool canMove;
-	private bool attacking = false;
+	private bool canKillWolf;
 
 	private int wolvesDestroyed;
 
 	private int money;
 
 	private bool[] weapons;
+
+	Dictionary<int, GameObject> wolvesToAttack;
 	
 	void Start() {
 		weapons = new bool[] {false, false, false };
@@ -24,6 +27,8 @@ public class Farmer_Movement : MonoBehaviour {
 		canMove = true;
 		animator = this.GetComponent<Animator> ();
 		movePosition = gameObject.transform.position;
+		canKillWolf = true;
+		wolvesToAttack = new Dictionary<int, GameObject> ();
 	}
 	
 	void Update () {
@@ -38,37 +43,51 @@ public class Farmer_Movement : MonoBehaviour {
 	}
 
 	void OnTriggerEnter2D(Collider2D other) {
-		attacking = true;
 		if (other.tag.Equals("wolf")) {
 			animator.SetBool("walking",true);
-			StartCoroutine(destroyWolf(other));
+			wolvesToAttack.Add(other.gameObject.GetInstanceID(), other.gameObject);
+			if (canKillWolf) {
+				StartCoroutine(destroyWolf());
+			}
 		}
 	}
 
-	void OnTriggeStay2D(Collider2D other) {
-		if (other.tag.Equals("wolf")) {
-			animator.SetBool("walking",true);
-		}
+	void OnTriggerExit2D(Collider2D other) {
+		wolvesToAttack.Remove (other.gameObject.GetInstanceID ());
 	}
-	
+
 	IEnumerator moveToLocation(Vector3 targetLocation) {
 		while (transform.position != targetLocation) {
 			previousPosition = transform.position;
 			transform.position = Vector3.MoveTowards (transform.position, movePosition, Time.deltaTime * speed);
 			yield return null;
 		}
-		animator.SetBool ("walking", false);
+		//if we cant kill a wolf, we are attacking and shouldnt stop
+		if (canKillWolf) {
+			animator.SetBool ("walking", false);
+		}
 	}
 
-	IEnumerator destroyWolf(Collider2D other) {
-		Wolf_AI wolf = (Wolf_AI) other.gameObject.GetComponent(typeof(Wolf_AI));
+	IEnumerator destroyWolf() {
+		canKillWolf = false;
+		animator.SetBool("walking",true);
+		var iterator = wolvesToAttack.GetEnumerator ();
+		iterator.MoveNext ();
+		GameObject dyingWolf = iterator.Current.Value;
+		wolvesToAttack.Remove (dyingWolf.GetInstanceID ());
+		Wolf_AI wolf = (Wolf_AI) dyingWolf.GetComponent(typeof(Wolf_AI));
 		wolf.killWolf ();
 		yield return new WaitForSeconds (.5f);
-		Destroy(other.gameObject);
-		animator.SetBool("walking",false);
-		attacking = false;
+		Destroy(dyingWolf);
+		canKillWolf = true;
 		wolvesDestroyed++;
 		money = money + randomizeReward (); 
+		if (wolvesToAttack.Count != 0) {
+			StartCoroutine(destroyWolf());
+		}
+		else {
+			animator.SetBool("walking",false);
+		}
 	}
 
 	void OnCollisionEnter2D(Collision2D other) {

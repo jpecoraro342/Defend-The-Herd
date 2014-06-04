@@ -41,7 +41,7 @@ public class GameController : MonoBehaviour {
 		isDuringWave = true;
 		waveNumber = 1;
 		maxWait = 3f;
-		wolvesToSpawn = 2 + waveNumber*4;
+		wolvesToSpawn = 4 + waveNumber*6;
 		waveText.text = "Wave: " + waveNumber;
 		coinText.text = "Coins: " + farmerMovement.getMoney (); 
 		StartCoroutine (SpawnWolves());
