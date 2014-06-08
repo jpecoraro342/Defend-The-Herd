@@ -82,4 +82,8 @@ public class Goat_AI : MonoBehaviour {
 		yield return new WaitForSeconds (3f);
 		Destroy (gameObject);
 	}
+
+	public bool aGoatJustDied() {
+		return dead; 
+	}
 }
