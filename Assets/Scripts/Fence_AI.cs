@@ -11,7 +11,7 @@ public class Fence_AI : MonoBehaviour {
 	private float damage;
 
 	void Start () {
-		maxHealth = 6;
+		maxHealth = 100;
 		animator = this.GetComponent<Animator> ();
 		animator.SetInteger ("fenceType", 0);
 		animator.SetBool ("damaged", false);
