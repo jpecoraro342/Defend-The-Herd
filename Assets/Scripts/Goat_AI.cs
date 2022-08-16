@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class Goat_AI : MonoBehaviour {
@@ -30,7 +31,7 @@ public class Goat_AI : MonoBehaviour {
 		time += Time.deltaTime;
 
 		if (killCounter >= 3) {
-			Application.LoadLevel("GG");
+			SceneManager.LoadScene("GG");
 			//StartCoroutine("GG");
 		}
 		
