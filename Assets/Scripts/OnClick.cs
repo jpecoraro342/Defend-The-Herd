@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class OnClick : MonoBehaviour {
@@ -11,7 +12,7 @@ public class OnClick : MonoBehaviour {
 		GUI.skin = mySkin; 
 
 		if( GUI.Button(new Rect(Screen.width/2-100, Screen.height/2-40, 200, 80), "RETRY?")) {
-			Application.LoadLevel("GameScene");
+			SceneManager.LoadScene("GameScene");
 		}
 	}
 }

@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
+using TMPro;
 
 public class GameController : MonoBehaviour {
 	public GameObject wolf;
-	public GUIText waveText;
-	public GUIText coinText; 
+	public TextMeshProUGUI waveText;
+	public TextMeshProUGUI coinText; 
 	
 	private int waveNumber;
 	private float maxWait;
@@ -31,17 +33,19 @@ public class GameController : MonoBehaviour {
 	
 	void Start() {
 		killCounter = 0;
-		fences = GameObject.FindGameObjectsWithTag ("fence");
+		fences = GameObject.FindGameObjectsWithTag("fence");
 		fenceAI = new Fence_AI[fences.Length];
 		for (int i = 0; i < fences.Length; i ++) {
 			fenceAI[i] = (Fence_AI) fences[i].GetComponent(typeof(Fence_AI));
 		}
-		farmer = GameObject.FindGameObjectWithTag ("farmer");
-		farmerMovement = (Farmer_Movement) farmer.GetComponent (typeof(Farmer_Movement));
+		farmer = GameObject.FindGameObjectWithTag("farmer");
+		farmerMovement = farmer.GetComponent<Farmer_Movement>();
 		isDuringWave = true;
 		waveNumber = 1;
 		maxWait = 3f;
 		wolvesToSpawn = 4 + waveNumber*6;
+		waveText = GameObject.FindGameObjectWithTag("wave").GetComponent<TextMeshProUGUI>();
+		coinText = GameObject.FindGameObjectWithTag("coins").GetComponent<TextMeshProUGUI>();
 		waveText.text = "Wave: " + waveNumber;
 		coinText.text = "Coins: " + farmerMovement.getMoney (); 
 		StartCoroutine (SpawnWolves());
@@ -104,7 +108,7 @@ public class GameController : MonoBehaviour {
 	}
 	
 	void Update () {
-		coinText.text = "Coins: " + farmerMovement.getMoney (); 
+		coinText.text = "Coins: " + farmerMovement.getMoney(); 
 	}
 
 	void incrementWave() {
@@ -142,7 +146,7 @@ public class GameController : MonoBehaviour {
 
 	IEnumerator GG() {
 		yield return new WaitForSeconds (2f);
-		Application.LoadLevel("GG");
+		SceneManager.LoadScene("GG");
 	}
 	
 	IEnumerator SpawnWolves() {
