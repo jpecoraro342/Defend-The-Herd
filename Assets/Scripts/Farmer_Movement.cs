@@ -6,6 +6,8 @@ public class Farmer_Movement : MonoBehaviour {
 
 	public float speed = 5f;
 
+	public float damageMultiplier = 1;
+
 	private Animator animator;
 	private Vector3 movePosition;
 	private Vector3 previousPosition;
@@ -16,7 +18,7 @@ public class Farmer_Movement : MonoBehaviour {
 	private int money;
 	private bool[] weapons;
 	
-	Dictionary<int, GameObject> wolvesToAttack;
+	Queue<GameObject> wolvesToAttack;
 	
 	void Start() {
 		weapons = new bool[] {false, false, false };
@@ -25,7 +27,7 @@ public class Farmer_Movement : MonoBehaviour {
 		animator = this.GetComponent<Animator> ();
 		movePosition = gameObject.transform.position;
 		canKillWolf = true;
-		wolvesToAttack = new Dictionary<int, GameObject> ();
+		wolvesToAttack = new Queue<GameObject> ();
 	}
 	
 	void Update () {
@@ -42,27 +44,19 @@ public class Farmer_Movement : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag.Equals("wolf")) {
 			animator.SetBool("walking",true);
-			//Debug.Log (wolvesToAttack.Count); 
-			wolvesToAttack.Add(other.gameObject.GetInstanceID(), other.gameObject);	
 			Wolf_AI wolf = (Wolf_AI) other.GetComponent(typeof(Wolf_AI));
-			wolf.changeState();  
+			wolf.setInFarmerRange(true);
+			wolvesToAttack.Enqueue(other.gameObject);
+			Debug.Log("Wolf Queued: " + wolvesToAttack.Count);
+			if (canKillWolf) {
+				StartCoroutine(attackWolf());
+			} 
 		}
 	}
 	
 	void OnTriggerExit2D(Collider2D other) {
-		wolvesToAttack.Remove (other.gameObject.GetInstanceID ());
-	}
-
-	void OnTriggerStay2D(Collider2D other) {
-		animator.SetBool("walking",true);
 		Wolf_AI wolf = (Wolf_AI) other.GetComponent(typeof(Wolf_AI));
-		if (wolf.getIsDead ()) {
-			StartCoroutine(destroyWolf ()); 
-			wolf.changeState(); 
-		}
-		else if(wolf.getIsDying () ) {
-			wolf.dealDamage (Time.deltaTime);
-		}
+		wolf.setInFarmerRange(false);
 	}
 
 	IEnumerator moveToLocation(Vector3 targetLocation) {
@@ -77,28 +71,56 @@ public class Farmer_Movement : MonoBehaviour {
 		}
 	}
 
-	IEnumerator destroyWolf() {
+	IEnumerator attackWolf() {
 		canKillWolf = false;
+		GameObject dyingWolf = wolvesToAttack.Dequeue ();
+		if (dyingWolf == null) {
+			Debug.Log("Loaded a previously dead wolf");
+			if (wolvesToAttack.Count != 0) {
+				StartCoroutine(attackWolf());
+				yield break;
+			}
+			else {
+				canKillWolf = true;
+				yield break;
+			}
+		}
 		animator.SetBool("walking",true);
-		var iterator = wolvesToAttack.GetEnumerator ();
-		iterator.MoveNext ();
-		GameObject dyingWolf = iterator.Current.Value;
-		wolvesToAttack.Remove (dyingWolf.GetInstanceID ());
+		Debug.Log ("Wolf dequeued for attacking");
+		Debug.Log (wolvesToAttack.Count);
 		Wolf_AI wolf = (Wolf_AI) dyingWolf.GetComponent(typeof(Wolf_AI));
-		wolf.killWolf ();
-		yield return new WaitForSeconds (.5f);
-		//yield return null; 
-		Destroy(dyingWolf);
+		if (!wolf.getIsDying()) {
+			wolf.changeState();
+		}
+		while (!wolf.getIsDead()) {
+			if (wolf.isInFarmerRange()) {
+				wolf.dealDamage(damageMultiplier*Time.deltaTime);
+				yield return null;
+			}
+			else {
+				Debug.Log("wolf exited attack range");
+				Debug.Log (wolvesToAttack.Count);
+				if (wolvesToAttack.Count != 0) {
+					Debug.Log("still wolves in the queue, continue attacking");
+					StartCoroutine(attackWolf());
+				}
+				canKillWolf = true;
+				yield break;
+			}
+		}
+		Debug.Log ("attacking wolf died");
+		animator.SetBool("walking", false);
 		canKillWolf = true;
 		wolvesDestroyed++;
 		money = money + randomizeReward (); 
+		StartCoroutine(destroyWolf(dyingWolf));
+	}
 
-		if (wolvesToAttack.Count != 0) {
-			StartCoroutine(destroyWolf());
-		}
-		else {
-			animator.SetBool("walking",false);
-		}
+	IEnumerator destroyWolf(GameObject wolfToKill) {
+		Wolf_AI wolf = (Wolf_AI) wolfToKill.GetComponent(typeof(Wolf_AI));
+		wolf.killWolf ();
+		yield return new WaitForSeconds (.5f);
+		Destroy (wolfToKill);
 	}
 
 	void OnCollisionEnter2D(Collision2D other) {

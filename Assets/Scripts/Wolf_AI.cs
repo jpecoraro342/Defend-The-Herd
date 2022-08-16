@@ -15,7 +15,9 @@ public class Wolf_AI : MonoBehaviour {
 	private Animator animator;
 
 	private GameObject goat;
-	private GameObject secondAttackingFence;	
+	private GameObject secondAttackingFence;
+
+	private bool inFarmerRange;
 	
 	GameObject[] goats;
 
@@ -64,8 +66,6 @@ public class Wolf_AI : MonoBehaviour {
 			}
 		}
 	}
-
-	
 		
 	public void changeState() {	
 		if (lifeCycle == Lifecycle.Alive) 
@@ -174,5 +174,12 @@ public class Wolf_AI : MonoBehaviour {
 			}
 		}
 	}
-	
+
+	public bool isInFarmerRange() {
+		return inFarmerRange;
+	}
+
+	public void setInFarmerRange(bool b) {
+		inFarmerRange = b;
+	}
 }
