@@ -168,4 +168,8 @@ public class GameController : MonoBehaviour {
 			yield return null;
 		}
 	}
+
+	internal int getWolvesToSpawn() {
+		return wolvesToSpawn; 
+	}
 }

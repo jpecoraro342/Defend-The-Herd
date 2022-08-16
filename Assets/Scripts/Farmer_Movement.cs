@@ -12,13 +12,10 @@ public class Farmer_Movement : MonoBehaviour {
 	private Vector3 beforeCollision;
 	private bool canMove;
 	private bool canKillWolf;
-
 	private int wolvesDestroyed;
-
 	private int money;
-
 	private bool[] weapons;
-
+	
 	Dictionary<int, GameObject> wolvesToAttack;
 	
 	void Start() {
@@ -41,19 +38,31 @@ public class Farmer_Movement : MonoBehaviour {
 			StartCoroutine("moveToLocation", movePosition);
 		}
 	}
-
+	
 	void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag.Equals("wolf")) {
 			animator.SetBool("walking",true);
-			wolvesToAttack.Add(other.gameObject.GetInstanceID(), other.gameObject);
-			if (canKillWolf) {
-				StartCoroutine(destroyWolf());
-			}
+			//Debug.Log (wolvesToAttack.Count); 
+			wolvesToAttack.Add(other.gameObject.GetInstanceID(), other.gameObject);	
+			Wolf_AI wolf = (Wolf_AI) other.GetComponent(typeof(Wolf_AI));
+			wolf.changeState();  
 		}
 	}
-
+	
 	void OnTriggerExit2D(Collider2D other) {
 		wolvesToAttack.Remove (other.gameObject.GetInstanceID ());
+	}
+
+	void OnTriggerStay2D(Collider2D other) {
+		animator.SetBool("walking",true);
+		Wolf_AI wolf = (Wolf_AI) other.GetComponent(typeof(Wolf_AI));
+		if (wolf.getIsDead ()) {
+			StartCoroutine(destroyWolf ()); 
+			wolf.changeState(); 
+		}
+		else if(wolf.getIsDying () ) {
+			wolf.dealDamage (Time.deltaTime);
+		}
 	}
 
 	IEnumerator moveToLocation(Vector3 targetLocation) {
@@ -78,10 +87,12 @@ public class Farmer_Movement : MonoBehaviour {
 		Wolf_AI wolf = (Wolf_AI) dyingWolf.GetComponent(typeof(Wolf_AI));
 		wolf.killWolf ();
 		yield return new WaitForSeconds (.5f);
+		//yield return null; 
 		Destroy(dyingWolf);
 		canKillWolf = true;
 		wolvesDestroyed++;
 		money = money + randomizeReward (); 
+
 		if (wolvesToAttack.Count != 0) {
 			StartCoroutine(destroyWolf());
 		}
